@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import esbuild from "esbuild";
 import { mkdir, writeFile } from "node:fs/promises";
 import process from "node:process";
@@ -59,7 +60,10 @@ const staticBuildOptions = {
 } satisfies esbuild.BuildOptions;
 
 if (prod) {
-  await Promise.all([esbuild.build(mainBuildOptions), esbuild.build(staticBuildOptions)]);
+  await Promise.all([
+    esbuild.build(mainBuildOptions),
+    esbuild.build(staticBuildOptions),
+  ]);
 } else {
   const [mainContext, staticContext] = await Promise.all([
     esbuild.context(mainBuildOptions),
