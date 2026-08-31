@@ -1,0 +1,9 @@
+{
+  "id": "vault-switcher",
+  "name": "Vault Switcher",
+  "author": "Yoonchae Lee",
+  "version": "0.1.0",
+  "minAppVersion": "1.11.0",
+  "description": "Switch vaults with a single click",
+  "isDesktopOnly": false
+}
