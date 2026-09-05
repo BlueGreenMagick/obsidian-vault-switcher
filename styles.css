@@ -36,3 +36,7 @@
   margin-left: auto;
   background-color: var(--background-modifier-hover);
 }
+
+.drag-reorder-ghost > .vault-switcher-settings__vault > .setting-item-icon:empty {
+  display: none;
+}

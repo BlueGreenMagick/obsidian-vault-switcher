@@ -85,6 +85,7 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
   }
 
   renderVaultSettings(setting: Obsidian.Setting, vaultSetting: VaultSetting) {
+    setting.settingEl.addClass("vault-switcher-settings__vault");
     setting.nameEl.empty();
     const vaultName = new Obsidian.TextComponent(setting.nameEl);
     vaultName.setValue(vaultSetting.vaultName);
