@@ -85,9 +85,18 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
   }
 
   renderVaultSettings(setting: Obsidian.Setting, vaultSetting: VaultSetting) {
-    setting.setName(vaultSetting.vaultName);
+    setting.nameEl.empty();
+    const vaultName = new Obsidian.TextComponent(setting.nameEl);
+    vaultName.setValue(vaultSetting.vaultName);
+    vaultName.setPlaceholder("Vault name");
+    vaultName.onChange((value) => {
+      vaultSetting.vaultName = value;
+      this.saveSetting();
+    });
+
     setting.addText((text) => {
       text.setValue(vaultSetting.icon.text);
+      text.setPlaceholder("Icon text");
       text.onChange((value) => {
         vaultSetting.icon.text = value;
         this.saveSetting();
