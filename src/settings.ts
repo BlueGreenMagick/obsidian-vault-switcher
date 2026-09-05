@@ -62,7 +62,22 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
       {
         type: "list",
         heading: "Vaults",
-        emptyState: "Found no vaults. This is a bug.",
+        emptyState: "No vaults configured.",
+        addItem: {
+          name: "Add vault",
+          action: () => {
+            this.settings.vaults.push({
+              vaultName: "",
+              icon: {
+                type: "simple",
+                text: "",
+                backgroundColor: "#808080",
+              },
+            });
+            this.saveSetting();
+            this.update();
+          },
+        },
         items: this.settings.vaults.map((vaultSetting) => ({
           name: vaultSetting.vaultName,
           render: (setting) => this.renderVaultSettings(setting, vaultSetting),
