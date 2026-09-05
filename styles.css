@@ -1,1 +1,38 @@
-/** Todo */
+.vault-switcher-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-1);
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: var(--size-4-2);
+  overflow-x: auto;
+  border-top: 1px solid var(--background-modifier-border);
+  background-color: var(--background-secondary);
+}
+
+.vault-switcher-bar__button {
+  display: flex;
+  flex: 0 0 36px;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-s);
+  color: var(--text-normal);
+  cursor: pointer;
+}
+
+.vault-switcher-bar__button:hover {
+  filter: brightness(0.9);
+}
+
+.vault-switcher-bar__vault {
+  font-weight: 600;
+}
+
+.vault-switcher-bar__settings {
+  margin-left: auto;
+  background-color: var(--background-modifier-hover);
+}

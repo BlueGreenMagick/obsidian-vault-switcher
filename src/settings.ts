@@ -103,7 +103,7 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
   }
 
   saveSetting() {
-    this.plugin.saveData(this.settings);
     this.plugin.settings = this.settings;
+    void this.plugin.saveSettings();
   }
 }
