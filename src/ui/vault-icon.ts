@@ -10,10 +10,7 @@ function getContrastTextColor(hexColor: string): string {
   return luminance > 0.6 ? "#000" : "#fff";
 }
 
-export function renderVaultIcon(
-  element: HTMLElement,
-  icon: VaultIconSetting,
-): void {
+export function renderVaultIcon(element: HTMLElement, icon: VaultIconSetting): void {
   element.empty();
   element.addClass("vault-switcher-icon");
   element.toggleClass("vault-switcher-icon--custom", icon.type === "custom");
@@ -37,8 +34,7 @@ export function renderVaultIcon(
   }
 
   element.textContent = icon.text ?? DEFAULT_VAULT_ICON_SETTING.text;
-  const backgroundColor =
-    icon.backgroundColor ?? DEFAULT_VAULT_ICON_SETTING.backgroundColor;
+  const backgroundColor = icon.backgroundColor ?? DEFAULT_VAULT_ICON_SETTING.backgroundColor;
   element.style.backgroundColor = backgroundColor;
   element.style.color = getContrastTextColor(backgroundColor);
 }
