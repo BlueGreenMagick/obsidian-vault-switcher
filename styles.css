@@ -2,11 +2,15 @@
   display: flex;
 }
 
-.vault-switcher-host--desktop:is(#id, *)>.workspace-drawer-vault-switcher,
-.vault-switcher-host--desktop:is(#id, *)>.workspace-drawer-vault-actions,
-.vault-switcher-host--mobile:is(#id, *)>.workspace-drawer-header-left,
-.vault-switcher-host--mobile:is(#id, *)>.workspace-drawer-header-icon.mod-settings {
+.vault-switcher-host--desktop:is(#id, *) > .workspace-drawer-vault-switcher,
+.vault-switcher-host--desktop:is(#id, *) > .workspace-drawer-vault-actions,
+.vault-switcher-host--mobile:is(#id, *) > .workspace-drawer-header-left,
+.vault-switcher-host--mobile:is(#id, *) > .workspace-drawer-header-icon.mod-settings {
   display: none;
+}
+
+.vault-switcher-host--mobile-top:is(#id, *) {
+  order: -1;
 }
 
 .vault-switcher-bar {
@@ -69,6 +73,18 @@
   pointer-events: none;
 }
 
+.vault-switcher-host--mobile-top .vault-switcher-bar__vaults {
+  margin-top: -9px;
+  margin-bottom: 0;
+  padding-top: 9px;
+  padding-bottom: 0;
+}
+
+.vault-switcher-host--mobile-top .vault-switcher-bar__vault-item--current::after {
+  top: -9px;
+  bottom: auto;
+}
+
 .vault-switcher-bar--mobile .vault-switcher-bar__button {
   flex-basis: var(--touch-size-m);
   width: var(--touch-size-m);
@@ -106,8 +122,8 @@
   background: var(--background-modifier-hover);
 }
 
-.vault-switcher-settings__vault>.setting-item-icon:empty,
-.drag-reorder-ghost>.vault-switcher-settings__vault>.setting-item-icon:empty {
+.vault-switcher-settings__vault > .setting-item-icon:empty,
+.drag-reorder-ghost > .vault-switcher-settings__vault > .setting-item-icon:empty {
   display: none;
 }
 
@@ -122,7 +138,7 @@
   min-width: 0;
 }
 
-.vault-switcher-settings__vault>.setting-item-control {
+.vault-switcher-settings__vault > .setting-item-control {
   gap: var(--size-4-2);
 }
 

@@ -46,6 +46,10 @@ export class VaultSwitcherBar {
   }
 
   render(): void {
+    this.hostEl.toggleClass(
+      "vault-switcher-host--mobile-top",
+      this.hostKind === "mobile" && this.plugin.settings.mobileBarAtTop,
+    );
     this.rootEl.empty();
 
     const vaultsEl = this.rootEl.createDiv({
@@ -100,6 +104,10 @@ export class VaultSwitcherBar {
 
   destroy(): void {
     this.rootEl.remove();
-    this.hostEl.removeClasses(["vault-switcher-host", `vault-switcher-host--${this.hostKind}`]);
+    this.hostEl.removeClasses([
+      "vault-switcher-host",
+      `vault-switcher-host--${this.hostKind}`,
+      "vault-switcher-host--mobile-top",
+    ]);
   }
 }

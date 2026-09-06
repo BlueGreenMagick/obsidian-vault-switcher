@@ -12,6 +12,7 @@ const OPEN_VAULT_MANAGER_COMMAND_ID = "app:open-vault";
 
 export interface PluginSetting {
   settingVersion: number;
+  mobileBarAtTop: boolean;
   /** the key must be identical to vaults[vaultName].vaultName */
   vaults: VaultSetting[];
 }
@@ -56,17 +57,15 @@ export function parseRawSettings(raw: RawPluginSetting): PluginSetting {
   return {
     ...raw,
     settingVersion: SETTINGS_VERSION,
+    mobileBarAtTop: raw.mobileBarAtTop ?? false,
     vaults: (raw.vaults ?? []).map((vault) => ({
       ...vault,
       icon: {
         ...vault.icon,
         type: vault.icon.type ?? DEFAULT_VAULT_ICON_SETTING.type,
         text: vault.icon.text ?? DEFAULT_VAULT_ICON_SETTING.text,
-        backgroundColor:
-          vault.icon.backgroundColor ??
-          DEFAULT_VAULT_ICON_SETTING.backgroundColor,
-        imageDataUrl:
-          vault.icon.imageDataUrl ?? DEFAULT_VAULT_ICON_SETTING.imageDataUrl,
+        backgroundColor: vault.icon.backgroundColor ?? DEFAULT_VAULT_ICON_SETTING.backgroundColor,
+        imageDataUrl: vault.icon.imageDataUrl ?? DEFAULT_VAULT_ICON_SETTING.imageDataUrl,
       },
     })),
   };
@@ -99,10 +98,7 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
           );
           setting.addButton((button) =>
             button.setButtonText("Export").onClick(() => {
-              new ExportConfigurationModal(
-                this.app,
-                JSON.stringify(this.settings, null, 2),
-              ).open();
+              new ExportConfigurationModal(this.app, JSON.stringify(this.settings, null, 2)).open();
             }),
           );
         },
@@ -142,6 +138,24 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
       },
       {
         type: "group",
+        heading: "Appearance",
+        items: [
+          {
+            name: "Move to top on mobile",
+            desc: "Show the vault switcher at the top of the mobile sidebar.",
+            render: (setting) => {
+              setting.addToggle((toggle) =>
+                toggle.setValue(this.settings.mobileBarAtTop).onChange((value) => {
+                  this.settings.mobileBarAtTop = value;
+                  this.saveSetting();
+                }),
+              );
+            },
+          },
+        ],
+      },
+      {
+        type: "group",
         heading: "Vault manager",
         items: [
           {
@@ -149,9 +163,7 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
             desc: "Open Obsidian's vault manager.",
             render: (setting) => {
               setting.addButton((button) =>
-                button
-                  .setButtonText("Open")
-                  .onClick(() => this.openVaultManager()),
+                button.setButtonText("Open").onClick(() => this.openVaultManager()),
               );
             },
           },
@@ -221,8 +233,7 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
 
       const picker = new Obsidian.ColorComponent(setting.controlEl);
       picker.setValue(
-        vaultSetting.icon.backgroundColor ??
-          DEFAULT_VAULT_ICON_SETTING.backgroundColor,
+        vaultSetting.icon.backgroundColor ?? DEFAULT_VAULT_ICON_SETTING.backgroundColor,
       );
       picker.onChange((color) => {
         vaultSetting.icon.backgroundColor = color;
@@ -240,13 +251,9 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
       cls: "vault-switcher-settings__file-input",
       attr: { type: "file", accept: "image/*" },
     });
-    input.addEventListener(
-      "change",
-      () => this.onImageSelected(input, vaultSetting),
-      {
-        once: true,
-      },
-    );
+    input.addEventListener("change", () => this.onImageSelected(input, vaultSetting), {
+      once: true,
+    });
 
     if (vaultSetting.icon.imageDataUrl !== "") {
       const removeButton = new Obsidian.ExtraButtonComponent(setting.controlEl);
@@ -260,10 +267,7 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
     }
   }
 
-  private onImageSelected(
-    input: HTMLInputElement,
-    vaultSetting: VaultSetting,
-  ): void {
+  private onImageSelected(input: HTMLInputElement, vaultSetting: VaultSetting): void {
     const file = input.files?.[0];
     if (file === undefined) {
       return;
@@ -298,9 +302,7 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
       !("settingVersion" in raw) ||
       typeof raw.settingVersion !== "number"
     ) {
-      throw new Error(
-        "Not a valid configuration: settingVersion field does not exist",
-      );
+      throw new Error("Not a valid configuration: settingVersion field does not exist");
     }
 
     const importedSettings = parseRawSettings(raw as RawPluginSetting);
