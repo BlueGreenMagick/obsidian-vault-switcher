@@ -32,6 +32,11 @@
   margin-bottom: -9px;
   padding-bottom: 9px;
   overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.vault-switcher-bar__vaults::-webkit-scrollbar {
+  display: none;
 }
 
 .vault-switcher-bar__button {
