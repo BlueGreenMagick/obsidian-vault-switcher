@@ -19,9 +19,7 @@ export class ImportConfigurationModal extends Modal {
     input.inputEl.addClass("vault-switcher-configuration-modal__textarea");
 
     new Setting(this.contentEl)
-      .addButton((button) =>
-        button.setButtonText("Cancel").onClick(() => this.close()),
-      )
+      .addButton((button) => button.setButtonText("Cancel").onClick(() => this.close()))
       .addButton((button) =>
         button
           .setButtonText("Import")
@@ -69,17 +67,14 @@ export class ExportConfigurationModal extends Modal {
     output.inputEl.addClass("vault-switcher-configuration-modal__textarea");
 
     new Setting(this.contentEl)
-      .addButton((button) =>
-        button.setButtonText("Close").onClick(() => this.close()),
-      )
+      .addButton((button) => button.setButtonText("Close").onClick(() => this.close()))
       .addButton((button) =>
         button
           .setButtonText("Copy")
           .setCta()
           .onClick(async () => {
             try {
-              const clipboard =
-                this.contentEl.ownerDocument.defaultView?.navigator.clipboard;
+              const clipboard = this.contentEl.ownerDocument.defaultView?.navigator.clipboard;
               if (clipboard === undefined) {
                 throw new Error("Clipboard access is unavailable.");
               }
@@ -89,9 +84,7 @@ export class ExportConfigurationModal extends Modal {
             } catch {
               output.inputEl.focus();
               output.inputEl.select();
-              new Notice(
-                "Failed to copy to clipboard. Please copy the configuration manually.",
-              );
+              new Notice("Failed to copy to clipboard. Please copy the configuration manually.");
             }
           }),
       );

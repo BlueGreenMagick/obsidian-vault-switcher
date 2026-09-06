@@ -60,10 +60,7 @@ const staticBuildOptions = {
 } satisfies esbuild.BuildOptions;
 
 if (prod) {
-  await Promise.all([
-    esbuild.build(mainBuildOptions),
-    esbuild.build(staticBuildOptions),
-  ]);
+  await Promise.all([esbuild.build(mainBuildOptions), esbuild.build(staticBuildOptions)]);
 } else {
   const [mainContext, staticContext] = await Promise.all([
     esbuild.context(mainBuildOptions),
