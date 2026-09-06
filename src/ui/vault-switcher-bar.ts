@@ -2,18 +2,14 @@ import { displayTooltip, Notice, setIcon, setTooltip } from "obsidian";
 import type VaultSwitcherPlugin from "../main";
 import { renderVaultIcon } from "./vault-icon";
 
-const DESKTOP_HOST_SELECTOR =
-  ".workspace-split.mod-left-split > .workspace-sidedock-vault-profile";
+const DESKTOP_HOST_SELECTOR = ".workspace-split.mod-left-split > .workspace-sidedock-vault-profile";
 const MOBILE_HOST_SELECTOR =
   ".workspace-drawer.mod-left > .workspace-drawer-inner > .workspace-drawer-header";
 
 export class VaultSwitcherBar {
   private readonly rootEl: HTMLElement;
 
-  static mount(
-    plugin: VaultSwitcherPlugin,
-    document: Document,
-  ): VaultSwitcherBar | null {
+  static mount(plugin: VaultSwitcherPlugin, document: Document): VaultSwitcherBar | null {
     const hostKind = document.body.hasClass("is-mobile") ? "mobile" : "desktop";
     const hostEl = document.querySelector<HTMLElement>(
       hostKind === "mobile" ? MOBILE_HOST_SELECTOR : DESKTOP_HOST_SELECTOR,
@@ -36,10 +32,7 @@ export class VaultSwitcherBar {
     private readonly hostEl: HTMLElement,
     private readonly hostKind: "desktop" | "mobile",
   ) {
-    hostEl.addClasses([
-      "vault-switcher-host",
-      `vault-switcher-host--${hostKind}`,
-    ]);
+    hostEl.addClasses(["vault-switcher-host", `vault-switcher-host--${hostKind}`]);
     this.rootEl = hostEl.createDiv({
       cls: ["vault-switcher-bar", `vault-switcher-bar--${hostKind}`],
     });
@@ -93,7 +86,7 @@ export class VaultSwitcherBar {
       cls: ["vault-switcher-bar__button", "vault-switcher-bar__settings"],
       attr: {
         type: "button",
-        "aria-label": "Open Settings.",
+        "aria-label": "Open settings.",
       },
     });
     this.attachTooltip(settingsButton, "Settings");
@@ -113,9 +106,7 @@ export class VaultSwitcherBar {
     // When the bar is pinned to the top on mobile, there's no room above it,
     // so point the tooltip down instead.
     const placement =
-      this.hostKind === "mobile" && this.plugin.settings.mobileBarAtTop
-        ? "bottom"
-        : "top";
+      this.hostKind === "mobile" && this.plugin.settings.mobileBarAtTop ? "bottom" : "top";
 
     // Obsidian treats `delay: 0` as falsy and falls back to its default (~1s) delay,
     // so use the smallest truthy delay to show the tooltip immediately on hover.
