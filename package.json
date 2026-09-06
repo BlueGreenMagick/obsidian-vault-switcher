@@ -8,9 +8,10 @@
   "main": "main.js",
   "scripts": {
     "dev": "jiti esbuild.config.mts",
-    "build": "tsc -noEmit -skipLibCheck && jiti esbuild.config.mts production",
+    "build": "jiti esbuild.config.mts production",
     "version": "node version-bump.mjs && pnpm fmt && git add manifest.json versions.json",
-    "lint": "eslint . && pnpm fmt:check",
+    "lint": "pnpm type-check && eslint . && pnpm fmt:check",
+    "type-check": "tsc -noEmit -skipLibCheck",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check"
   },
