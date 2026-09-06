@@ -1,5 +1,9 @@
 import * as Obsidian from "obsidian";
 import type VaultSwitcherPlugin from "./main";
+import {
+  ExportConfigurationModal,
+  ImportConfigurationModal,
+} from "./ui/configuration-transfer-modal";
 import { renderVaultIcon } from "./ui/vault-icon";
 
 // Increment when the same setting key is re-used to store different type of setting
@@ -81,6 +85,27 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
 
   getSettingDefinitions(): Obsidian.SettingDefinitionItem[] {
     return [
+      {
+        name: "Configuration",
+        desc: "Copy or paste the entire configuration between vaults.",
+        render: (setting) => {
+          setting.addButton((button) =>
+            button.setButtonText("Import").onClick(() => {
+              new ImportConfigurationModal(this.app, async (raw) => {
+                await this.importConfiguration(raw);
+              }).open();
+            }),
+          );
+          setting.addButton((button) =>
+            button.setButtonText("Export").onClick(() => {
+              new ExportConfigurationModal(
+                this.app,
+                JSON.stringify(this.settings, null, 2),
+              ).open();
+            }),
+          );
+        },
+      },
       {
         type: "list",
         heading: "Vaults",
@@ -178,8 +203,7 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
 
     const fileButton = setting.controlEl.createEl("label", {
       cls: "vault-switcher-settings__file-button",
-      text:
-        vaultSetting.icon.imageDataUrl ? "Replace File" : "Select File",
+      text: vaultSetting.icon.imageDataUrl ? "Replace File" : "Select File",
     });
     const input = fileButton.createEl("input", {
       cls: "vault-switcher-settings__file-input",
@@ -234,6 +258,35 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
       new Obsidian.Notice("Could not read the selected image.");
     });
     reader.readAsDataURL(file);
+  }
+
+  private async importConfiguration(raw: unknown): Promise<void> {
+    if (
+      typeof raw !== "object" ||
+      raw === null ||
+      !("settingVersion" in raw) ||
+      typeof raw.settingVersion !== "number"
+    ) {
+      throw new Error(
+        "Not a valid configuration: settingVersion field does not exist",
+      );
+    }
+
+    const importedSettings = parseRawSettings(raw as RawPluginSetting);
+    const previousSettings = this.plugin.settings;
+
+    this.settings = importedSettings;
+    this.plugin.settings = importedSettings;
+
+    try {
+      await this.plugin.saveSettings();
+    } catch (error) {
+      this.settings = previousSettings;
+      this.plugin.settings = previousSettings;
+      throw error;
+    }
+
+    this.update();
   }
 
   saveSetting() {

@@ -140,3 +140,11 @@
   font-weight: 600;
   font-size: var(--font-ui-small);
 }
+
+.vault-switcher-configuration-modal__textarea {
+  display: block;
+  width: 100%;
+  min-height: 240px;
+  resize: vertical;
+  font-family: var(--font-monospace);
+}
