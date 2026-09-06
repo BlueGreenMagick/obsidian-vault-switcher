@@ -2,6 +2,8 @@
 
 Vault Switcher is an Obsidian plugin for switching vaults with a single click.
 
+![screenshot](./resources/screenshot.png)
+
 ## Development
 
 Install dependencies and build the plugin:
