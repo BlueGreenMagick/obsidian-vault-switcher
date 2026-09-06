@@ -1,4 +1,4 @@
-import { Notice, setIcon } from "obsidian";
+import { Notice, setIcon, setTooltip } from "obsidian";
 import type VaultSwitcherPlugin from "../main";
 import { renderVaultIcon } from "./vault-icon";
 
@@ -71,9 +71,11 @@ export class VaultSwitcherBar {
         attr: {
           type: "button",
           "aria-label": vault.vaultName,
-          title: vault.vaultName,
         },
       });
+      // Obsidian treats `delay: 0` as falsy and falls back to its default (~1s) delay,
+      // so use the smallest truthy delay to show the tooltip immediately.
+      setTooltip(button, vault.vaultName, { delay: 1, placement: "top" });
       renderVaultIcon(button, vault.icon);
       button.addEventListener("click", () => {
         this.rootEl.ownerDocument.defaultView?.open(
@@ -86,10 +88,10 @@ export class VaultSwitcherBar {
       cls: ["vault-switcher-bar__button", "vault-switcher-bar__settings"],
       attr: {
         type: "button",
-        "aria-label": "Open settings",
-        title: "Open settings",
+        "aria-label": "Settings",
       },
     });
+    setTooltip(settingsButton, "Settings", { delay: 1, placement: "top" });
     setIcon(settingsButton, "settings");
     settingsButton.addEventListener("click", () => {
       const app = this.plugin.app as typeof this.plugin.app & {
