@@ -55,7 +55,7 @@ export function parseRawSettings(raw: RawPluginSetting): PluginSetting {
       ...vault,
       icon: {
         ...vault.icon,
-        type: vault.icon.type === "custom" ? "custom" : "simple",
+        type: vault.icon.type ?? DEFAULT_VAULT_ICON_SETTING.type,
         text: vault.icon.text ?? DEFAULT_VAULT_ICON_SETTING.text,
         backgroundColor:
           vault.icon.backgroundColor ??
