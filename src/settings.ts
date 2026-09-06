@@ -1,8 +1,9 @@
 import * as Obsidian from "obsidian";
 import type VaultSwitcherPlugin from "./main";
+import { renderVaultIcon } from "./ui/vault-icon";
 
 // Increment when the same setting key is re-used to store different type of setting
-export const SETTINGS_VERSION = 1 as const;
+export const SETTINGS_VERSION = 2 as const;
 
 export interface PluginSetting {
   settingVersion: number;
@@ -16,10 +17,19 @@ export interface VaultSetting {
 }
 
 export interface VaultIconSetting {
-  type: "simple";
-  text: string;
-  backgroundColor: string;
+  type: "simple" | "custom";
+  text?: string;
+  backgroundColor?: string;
+  imageDataUrl?: string;
 }
+
+/** Fallback values used when a `VaultIconSetting` field is empty */
+export const DEFAULT_VAULT_ICON_SETTING = {
+  type: "simple",
+  text: "",
+  backgroundColor: "#808080",
+  imageDataUrl: "",
+} satisfies Required<VaultIconSetting>;
 
 /** May be a settings JSON object from any version of this plugin  */
 export type RawPluginSetting = Partial<PluginSetting>;
@@ -41,7 +51,19 @@ export function parseRawSettings(raw: RawPluginSetting): PluginSetting {
   return {
     ...raw,
     settingVersion: SETTINGS_VERSION,
-    vaults: raw.vaults ?? [],
+    vaults: (raw.vaults ?? []).map((vault) => ({
+      ...vault,
+      icon: {
+        ...vault.icon,
+        type: vault.icon.type === "custom" ? "custom" : "simple",
+        text: vault.icon.text ?? DEFAULT_VAULT_ICON_SETTING.text,
+        backgroundColor:
+          vault.icon.backgroundColor ??
+          DEFAULT_VAULT_ICON_SETTING.backgroundColor,
+        imageDataUrl:
+          vault.icon.imageDataUrl ?? DEFAULT_VAULT_ICON_SETTING.imageDataUrl,
+      },
+    })),
   };
 }
 
@@ -68,11 +90,7 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
           action: () => {
             this.settings.vaults.push({
               vaultName: "",
-              icon: {
-                type: "simple",
-                text: "",
-                backgroundColor: "#808080",
-              },
+              icon: { ...DEFAULT_VAULT_ICON_SETTING },
             });
             this.saveSetting();
             this.update();
@@ -82,17 +100,17 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
           name: vaultSetting.vaultName,
           render: (setting) => this.renderVaultSettings(setting, vaultSetting),
         })),
-        onReorder: async (oldIndex, newIndex) => {
+        onReorder: (oldIndex, newIndex) => {
           const [moved] = this.settings.vaults.splice(oldIndex, 1);
           if (moved === undefined) {
             return;
           }
           this.settings.vaults.splice(newIndex, 0, moved);
-          await this.saveSetting();
+          this.saveSetting();
         },
-        onDelete: async (idx) => {
+        onDelete: (idx) => {
           this.settings.vaults.splice(idx, 1);
-          await this.saveSetting();
+          this.saveSetting();
           this.update();
         },
       },
@@ -102,6 +120,20 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
   renderVaultSettings(setting: Obsidian.Setting, vaultSetting: VaultSetting) {
     setting.settingEl.addClass("vault-switcher-settings__vault");
     setting.nameEl.empty();
+    setting.infoEl
+      .querySelectorAll(":scope > .vault-switcher-settings__icon-preview")
+      .forEach((element) => element.remove());
+    setting.nameEl.addClass("vault-switcher-settings__vault-header");
+
+    const previewEl = setting.nameEl.createDiv({
+      cls: "vault-switcher-settings__icon-preview",
+      attr: {
+        "aria-label": "Icon preview",
+        title: "Icon preview",
+      },
+    });
+    renderVaultIcon(previewEl, vaultSetting.icon);
+
     const vaultName = new Obsidian.TextComponent(setting.nameEl);
     vaultName.setValue(vaultSetting.vaultName);
     vaultName.setPlaceholder("Vault name");
@@ -110,21 +142,98 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
       this.saveSetting();
     });
 
-    setting.addText((text) => {
-      text.setValue(vaultSetting.icon.text);
+    const dropdown = new Obsidian.DropdownComponent(setting.nameEl);
+    dropdown.addOption("simple", "Simple");
+    dropdown.addOption("custom", "Custom");
+    dropdown.setValue(vaultSetting.icon.type);
+    dropdown.onChange((value) => {
+      vaultSetting.icon.type = value === "custom" ? "custom" : "simple";
+      this.saveSetting();
+      this.update();
+    });
+
+    if (vaultSetting.icon.type === "simple") {
+      const text = new Obsidian.TextComponent(setting.controlEl);
+      text.setValue(vaultSetting.icon.text ?? DEFAULT_VAULT_ICON_SETTING.text);
       text.setPlaceholder("Icon text");
+      text.inputEl.addClass("vault-switcher-settings__icon-text");
       text.onChange((value) => {
         vaultSetting.icon.text = value;
+        renderVaultIcon(previewEl, vaultSetting.icon);
         this.saveSetting();
       });
-    });
-    setting.addColorPicker((picker) => {
-      picker.setValue(vaultSetting.icon.backgroundColor);
+
+      const picker = new Obsidian.ColorComponent(setting.controlEl);
+      picker.setValue(
+        vaultSetting.icon.backgroundColor ??
+          DEFAULT_VAULT_ICON_SETTING.backgroundColor,
+      );
       picker.onChange((color) => {
         vaultSetting.icon.backgroundColor = color;
+        renderVaultIcon(previewEl, vaultSetting.icon);
         this.saveSetting();
       });
+      return;
+    }
+
+    const fileButton = setting.controlEl.createEl("label", {
+      cls: "vault-switcher-settings__file-button",
+      text:
+        vaultSetting.icon.imageDataUrl ? "Replace File" : "Select File",
     });
+    const input = fileButton.createEl("input", {
+      cls: "vault-switcher-settings__file-input",
+      attr: { type: "file", accept: "image/*" },
+    });
+    input.addEventListener(
+      "change",
+      () => this.onImageSelected(input, vaultSetting),
+      {
+        once: true,
+      },
+    );
+
+    if (vaultSetting.icon.imageDataUrl !== "") {
+      const removeButton = new Obsidian.ExtraButtonComponent(setting.controlEl);
+      removeButton.setIcon("trash-2");
+      removeButton.setTooltip("Remove custom icon");
+      removeButton.onClick(() => {
+        vaultSetting.icon.imageDataUrl = "";
+        this.saveSetting();
+        this.update();
+      });
+    }
+  }
+
+  private onImageSelected(
+    input: HTMLInputElement,
+    vaultSetting: VaultSetting,
+  ): void {
+    const file = input.files?.[0];
+    if (file === undefined) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      new Obsidian.Notice("Select an image file.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      if (typeof reader.result !== "string") {
+        new Obsidian.Notice("Could not read the selected image.");
+        return;
+      }
+
+      vaultSetting.icon.imageDataUrl = reader.result;
+      this.saveSetting();
+      this.update();
+    });
+    reader.addEventListener("error", () => {
+      new Obsidian.Notice("Could not read the selected image.");
+    });
+    reader.readAsDataURL(file);
   }
 
   saveSetting() {
