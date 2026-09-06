@@ -1,4 +1,4 @@
-import { Notice, setIcon, setTooltip } from "obsidian";
+import { displayTooltip, Notice, setIcon, setTooltip } from "obsidian";
 import type VaultSwitcherPlugin from "../main";
 import { renderVaultIcon } from "./vault-icon";
 
@@ -73,9 +73,7 @@ export class VaultSwitcherBar {
           "aria-label": vault.vaultName,
         },
       });
-      // Obsidian treats `delay: 0` as falsy and falls back to its default (~1s) delay,
-      // so use the smallest truthy delay to show the tooltip immediately.
-      setTooltip(button, vault.vaultName, { delay: 1, placement: "top" });
+      this.attachTooltip(button, vault.vaultName);
       renderVaultIcon(button, vault.icon);
       button.addEventListener("click", () => {
         this.rootEl.ownerDocument.defaultView?.open(
@@ -91,7 +89,7 @@ export class VaultSwitcherBar {
         "aria-label": "Settings",
       },
     });
-    setTooltip(settingsButton, "Settings", { delay: 1, placement: "top" });
+    this.attachTooltip(settingsButton, "Settings");
     setIcon(settingsButton, "settings");
     settingsButton.addEventListener("click", () => {
       const app = this.plugin.app as typeof this.plugin.app & {
@@ -101,6 +99,23 @@ export class VaultSwitcherBar {
       };
 
       app.setting.open();
+    });
+  }
+
+  private attachTooltip(el: HTMLElement, label: string): void {
+    // When the bar is pinned to the top on mobile, there's no room above it,
+    // so point the tooltip down instead.
+    const placement =
+      this.hostKind === "mobile" && this.plugin.settings.mobileBarAtTop ? "bottom" : "top";
+
+    // Obsidian treats `delay: 0` as falsy and falls back to its default (~1s) delay,
+    // so use the smallest truthy delay to show the tooltip immediately on hover.
+    setTooltip(el, label, { delay: 1, placement });
+    // Touch input doesn't trigger the hover tooltip reliably, so show it directly
+    // on touch; Obsidian hides any shown tooltip on the next pointerup, so it
+    // persists for as long as the touch is held.
+    el.addEventListener("touchstart", () => {
+      displayTooltip(el, label, { placement });
     });
   }
 
