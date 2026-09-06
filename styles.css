@@ -11,6 +11,8 @@
 
 .vault-switcher-host--mobile-top:is(#id, *) {
   order: -1;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 
 .vault-switcher-bar {
