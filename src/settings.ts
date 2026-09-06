@@ -8,6 +8,7 @@ import { renderVaultIcon } from "./ui/vault-icon";
 
 // Increment when the same setting key is re-used to store different type of setting
 export const SETTINGS_VERSION = 2 as const;
+const OPEN_VAULT_MANAGER_COMMAND_ID = "app:open-vault";
 
 export interface PluginSetting {
   settingVersion: number;
@@ -139,7 +140,37 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
           this.update();
         },
       },
+      {
+        type: "group",
+        heading: "Vault manager",
+        items: [
+          {
+            name: "Manage vaults",
+            desc: "Open Obsidian's vault manager.",
+            render: (setting) => {
+              setting.addButton((button) =>
+                button
+                  .setButtonText("Open")
+                  .onClick(() => this.openVaultManager()),
+              );
+            },
+          },
+        ],
+      },
     ];
+  }
+
+  private openVaultManager(): void {
+    // Obsidian has no public API for the vault manager, so use its built-in command.
+    const app = this.app as Obsidian.App & {
+      commands: {
+        executeCommandById: (commandId: string) => boolean;
+      };
+    };
+
+    if (!app.commands.executeCommandById(OPEN_VAULT_MANAGER_COMMAND_ID)) {
+      new Obsidian.Notice("Could not open the vault manager.");
+    }
   }
 
   renderVaultSettings(setting: Obsidian.Setting, vaultSetting: VaultSetting) {
