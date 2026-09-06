@@ -51,9 +51,18 @@ export class VaultSwitcherBar {
     const vaultsEl = this.rootEl.createDiv({
       cls: "vault-switcher-bar__vaults",
     });
+    const currentVaultName = this.plugin.app.vault.getName();
 
     for (const vault of this.plugin.settings.vaults) {
-      const button = vaultsEl.createEl("button", {
+      const vaultEl = vaultsEl.createDiv({
+        cls: "vault-switcher-bar__vault-item",
+      });
+      vaultEl.toggleClass(
+        "vault-switcher-bar__vault-item--current",
+        vault.vaultName === currentVaultName,
+      );
+
+      const button = vaultEl.createEl("button", {
         cls: ["vault-switcher-bar__button", "vault-switcher-bar__vault"],
         attr: {
           type: "button",

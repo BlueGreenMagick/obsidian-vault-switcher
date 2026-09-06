@@ -23,6 +23,8 @@
   align-items: center;
   gap: var(--size-4-1);
   min-width: 0;
+  margin-bottom: -9px;
+  padding-bottom: 9px;
   overflow-x: auto;
 }
 
@@ -46,6 +48,25 @@
 
 .vault-switcher-bar__vault {
   font-weight: 600;
+}
+
+.vault-switcher-bar__vault-item {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.vault-switcher-bar__vault-item--current::after {
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  width: 24px;
+  height: 5px;
+  transform: translateX(-50%);
+  border-radius: var(--radius-s);
+  background-color: var(--interactive-accent);
+  content: "";
+  pointer-events: none;
 }
 
 .vault-switcher-bar--mobile .vault-switcher-bar__button {
