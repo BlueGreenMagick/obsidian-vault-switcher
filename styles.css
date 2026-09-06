@@ -129,6 +129,14 @@
   display: none;
 }
 
+.vault-switcher-settings__vault {
+  flex-wrap: wrap;
+}
+
+.vault-switcher-settings__vault > .setting-item-info {
+  min-width: 220px;
+}
+
 .vault-switcher-settings__vault-header {
   display: flex;
   gap: var(--size-4-2);
@@ -142,6 +150,11 @@
 
 .vault-switcher-settings__vault > .setting-item-control {
   gap: var(--size-4-2);
+}
+
+.vault-switcher-settings__vault > .setting-item-control input[type="color"]:is(#id, *) {
+  flex: 0 0 auto;
+  width: calc(var(--swatch-width) + 4px);
 }
 
 .vault-switcher-settings__icon-text {
