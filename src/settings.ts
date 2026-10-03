@@ -1,23 +1,26 @@
 import * as Obsidian from "obsidian";
 import type VaultSwitcherPlugin from "./main";
+import { parseAndMigrateRawSettings, type RawPluginSetting } from "./migrate";
 import {
   ExportConfigurationModal,
   ImportConfigurationModal,
 } from "./ui/configuration-transfer-modal";
 import { renderVaultIcon } from "./ui/vault-icon";
+import { generateVaultId } from "./utils";
 
 // Increment when the same setting key is re-used to store different type of setting
-export const SETTINGS_VERSION = 2 as const;
+export const SETTINGS_VERSION = 3 as const;
 const OPEN_VAULT_MANAGER_COMMAND_ID = "app:open-vault";
 
 export interface PluginSetting {
   settingVersion: number;
   mobileBarAtTop: boolean;
-  /** the key must be identical to vaults[vaultName].vaultName */
   vaults: VaultSetting[];
 }
 
 export interface VaultSetting {
+  /** id persists across vault rename */
+  id: string;
   vaultName: string;
   icon: VaultIconSetting;
 }
@@ -36,40 +39,6 @@ export const DEFAULT_VAULT_ICON_SETTING = {
   backgroundColor: "#808080",
   imageDataUrl: "",
 } satisfies Required<VaultIconSetting>;
-
-/** May be a settings JSON object from any version of this plugin  */
-export type RawPluginSetting = Partial<PluginSetting>;
-
-/**
- * Try to parse raw settings json object into valid settings object.
- *
- * Raw setting text is assumed to be a valid setting from some plugin version.
- * It may do a little bit of validation if needed.
- */
-export function parseRawSettings(raw: RawPluginSetting): PluginSetting {
-  const rawSettingVersion = raw.settingVersion ?? 0;
-  if (rawSettingVersion > SETTINGS_VERSION) {
-    throw new Error(
-      `Invalid setting: current setting file was created from incompatible future version of this plugin. Current setting version: "${SETTINGS_VERSION}", found: "${rawSettingVersion}"`,
-    );
-  }
-
-  return {
-    ...raw,
-    settingVersion: SETTINGS_VERSION,
-    mobileBarAtTop: raw.mobileBarAtTop ?? false,
-    vaults: (raw.vaults ?? []).map((vault) => ({
-      ...vault,
-      icon: {
-        ...vault.icon,
-        type: vault.icon.type ?? DEFAULT_VAULT_ICON_SETTING.type,
-        text: vault.icon.text ?? DEFAULT_VAULT_ICON_SETTING.text,
-        backgroundColor: vault.icon.backgroundColor ?? DEFAULT_VAULT_ICON_SETTING.backgroundColor,
-        imageDataUrl: vault.icon.imageDataUrl ?? DEFAULT_VAULT_ICON_SETTING.imageDataUrl,
-      },
-    })),
-  };
-}
 
 export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
   plugin: VaultSwitcherPlugin;
@@ -111,6 +80,7 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
           name: "Add vault",
           action: () => {
             this.settings.vaults.push({
+              id: generateVaultId(),
               vaultName: "",
               icon: { ...DEFAULT_VAULT_ICON_SETTING },
             });
@@ -305,7 +275,7 @@ export class VaultSwitcherSettingTab extends Obsidian.PluginSettingTab {
       throw new Error("Not a valid configuration: settingVersion field does not exist");
     }
 
-    const importedSettings = parseRawSettings(raw as RawPluginSetting);
+    const importedSettings = parseAndMigrateRawSettings(raw as RawPluginSetting);
     const previousSettings = this.plugin.settings;
 
     this.settings = importedSettings;

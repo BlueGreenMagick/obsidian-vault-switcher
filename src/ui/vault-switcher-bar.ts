@@ -1,6 +1,7 @@
 import { displayTooltip, Notice, setIcon, setTooltip } from "obsidian";
 import type VaultSwitcherPlugin from "../main";
 import { renderVaultIcon } from "./vault-icon";
+import { openVault } from "../utils";
 
 const DESKTOP_HOST_SELECTOR = ".workspace-split.mod-left-split > .workspace-sidedock-vault-profile";
 const MOBILE_HOST_SELECTOR =
@@ -76,9 +77,7 @@ export class VaultSwitcherBar {
       this.attachTooltip(button, vault.vaultName);
       renderVaultIcon(button, vault.icon);
       button.addEventListener("click", () => {
-        this.rootEl.ownerDocument.defaultView?.open(
-          `obsidian://open?vault=${encodeURIComponent(vault.vaultName)}`,
-        );
+        openVault(vault.vaultName);
       });
     }
 
